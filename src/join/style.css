@@ -99,3 +99,4 @@ form { display: flex; flex-direction: column; gap: 12px; }
 #app { position: relative; z-index: 1; }
 .screen.out { animation: out .35s ease both; }
 @keyframes out { to { opacity: 0; transform: scale(.92); } }
+.notice { text-align: center; margin: 0; padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(227,180,90,.5); background: rgba(227,180,90,.1); color: var(--gold2); }

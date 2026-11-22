@@ -16,3 +16,9 @@ export function savePerson(p: StoredPerson): void {
   memory = [...loadPeople().filter((x) => x.id !== p.id), p];
   try { localStorage.setItem(KEY, JSON.stringify(memory)); } catch { /* memory only */ }
 }
+
+/** Keeps only the people whose ids are listed (the rest were deleted by the admin). */
+export function keepPeople(ids: Set<string>): void {
+  memory = loadPeople().filter((p) => ids.has(p.id));
+  try { localStorage.setItem(KEY, JSON.stringify(memory)); } catch { /* memory only */ }
+}

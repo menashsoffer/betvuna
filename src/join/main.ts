@@ -1,11 +1,11 @@
 import './style.css';
 import { normalizePhone } from '../shared/phone';
-import { ApiError, MESSAGES, joinOpen, joinWall, me, onSettings, recover, register, setPhoto, uploadPhoto, type Me } from './api';
+import { ApiError, MESSAGES, joinOpen, joinWall, me, onWall, recover, register, setPhoto, uploadPhoto, type Me } from './api';
 import { openCamera, type Camera } from './camera';
 import { findCity, loadCities, searchCities, type City } from './cities';
 import { fileToJpeg } from './image';
 import { flyFrom, mapBurst, preloadMap, type MapBurst } from './mapburst';
-import { loadPeople, savePerson } from './store';
+import { keepPeople, loadPeople, savePerson } from './store';
 
 const app = document.getElementById('app')!;
 const BASE = import.meta.env.BASE_URL;
@@ -15,6 +15,7 @@ let camera: Camera | null = null;
 let current: string | null = null; // id of the person shown on the join screen
 let isOpen = true;
 let burst: MapBurst | null = null; // the map left behind by the join animation
+let shown: string | null = null; // id of the person the current screen is about
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join(' ');
@@ -24,6 +25,7 @@ const message = (e: unknown) => MESSAGES[e instanceof ApiError ? e.message : 'ne
 const tokenOf = (id: string) => loadPeople().find((p) => p.id === id)?.token ?? null;
 
 function show(html: string): HTMLElement {
+  shown = null;
   burst?.remove();
   burst = null;
   camera?.stop();
@@ -34,9 +36,10 @@ function show(html: string): HTMLElement {
 }
 
 /* 1. פתיחה */
-function welcome(): void {
+function welcome(notice = ''): void {
   const el = show(`
     ${LOGOS}
+    ${notice ? `<p class="notice" role="status">${notice}</p>` : ''}
     <h1 class="t xl">נבחרת<br>השגרירים</h1>
     <p class="sub">מאירים את הארץ<br>בנקודות של תורה</p>
     <div class="glow"><i></i></div>
@@ -131,6 +134,7 @@ function selfie(id: string, fromJoin = false): void {
       <button class="btn gold" data-ok style="width:auto;padding-inline:30px">אישור</button>
     </div>
     <input type="file" accept="image/*" capture="user" hidden>`);
+  shown = id;
   const $ = <T extends HTMLElement>(s: string) => el.querySelector(s) as T;
   const video = $<HTMLVideoElement>('video');
   const img = $<HTMLImageElement>('img');
@@ -203,7 +207,8 @@ async function joinScreen(): Promise<void> {
       .querySelector('[data-retry]')!.addEventListener('click', () => joinScreen());
     return;
   }
-  if (!list.length) { welcome(); return; }
+  const pruned = prune(people.length, list);
+  if (!list.length) { welcome(pruned ? DELETED : ''); return; }
   const main = list.find((p) => p.id === current) ?? list.find((p) => !p.joined) ?? list[list.length - 1];
   current = main.id;
   const others = list.filter((p) => p.id !== main.id);
@@ -227,6 +232,7 @@ async function joinScreen(): Promise<void> {
         p.joined ? `<span class="done">בנבחרת ✓</span>` : `<button data-pick="${p.id}">${isOpen ? 'צרף' : 'פתח'}</button>`}</div>`).join('')}
       <button class="link" data-another>רשום משתתף נוסף מהטלפון הזה</button>
     </div>`);
+  shown = main.id;
   const err = el.querySelector('.err') as HTMLElement;
 
   el.querySelector('[data-photo]')!.addEventListener('click', () => selfie(main.id, true));
@@ -250,6 +256,7 @@ async function joinScreen(): Promise<void> {
     } catch (ex) {
       map.remove();
       if (ex instanceof ApiError && ex.message === 'join_closed') { isOpen = false; joinScreen(); return; }
+      if (ex instanceof ApiError && ex.message === 'unknown_token') { joinScreen(); return; }
       el.classList.remove('out');
       err.textContent = message(ex);
       btn.disabled = false;
@@ -268,6 +275,7 @@ function joined(p: Me, map: MapBurst | null = null): void {
     <p class="sub">הסתכל למסך הגדול:<br>התמונה שלך מופיעה עכשיו</p>
     <div class="spacer"></div>
     <button class="link" data-back>חזרה</button>`);
+  shown = p.id;
   burst = map; // keep the dimmed map behind the welcome screen
   navigator.vibrate?.([80, 60, 160]);
   el.querySelector('[data-back]')!.addEventListener('click', () => joinScreen());
@@ -308,12 +316,44 @@ function recoverScreen(): void {
   });
 }
 
-// When the admin opens or locks the button, refresh the join screen without a reload.
-onSettings((open) => {
-  if (open === isOpen) return;
-  isOpen = open;
-  if (app.querySelector('.join, .locked')) joinScreen();
+/* מחיקת פרופיל: הטלפון מזהה שהמנהל מחק את ההרשמה ומתחיל מחדש */
+const DELETED = 'ההרשמה שלך נמחקה. אפשר להירשם מחדש.';
+
+/** Drops stored people the server no longer knows. Returns true if any were dropped. */
+function prune(stored: number, list: Me[]): boolean {
+  if (list.length >= stored) return false;
+  keepPeople(new Set(list.map((p) => p.id)));
+  if (current && !list.some((p) => p.id === current)) current = null;
+  return true;
+}
+
+let checking = false;
+async function checkDeleted(): Promise<void> {
+  const people = loadPeople();
+  if (!people.length || checking) return;
+  checking = true;
+  try {
+    const list = await me(people.map((p) => p.token));
+    const before = shown;
+    if (!prune(people.length, list)) return;
+    if (before && !list.some((p) => p.id === before)) {
+      if (list.length) joinScreen(); else welcome(DELETED);
+    }
+  } catch { /* offline: try again on the next check */ } finally { checking = false; }
+}
+
+// Live: the admin opens or locks the button, or takes someone off the wall.
+onWall({
+  settings(open) {
+    if (open === isOpen) return;
+    isOpen = open;
+    if (app.querySelector('.join, .locked')) joinScreen();
+  },
+  removed: () => { void checkDeleted(); },
 });
+// Not everyone deleted was on the wall, so also check every 20 seconds and when the phone wakes up.
+setInterval(() => { if (document.visibilityState === 'visible') void checkDeleted(); }, 20_000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void checkDeleted(); });
 
 preloadMap();
 if (loadPeople().length) joinScreen(); else welcome();
