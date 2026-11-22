@@ -90,3 +90,12 @@ form { display: flex; flex-direction: column; gap: 12px; }
 .tag { align-self: center; font-size: 1rem; padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(227,180,90,.5); color: var(--gold2); }
 .spacer { flex: 1; }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; } }
+/* "נדלק על המפה" */
+.mapburst { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.mapburst svg { height: 82dvh; max-width: 92vw; overflow: visible; }
+.mapburst path { fill: rgba(227,180,90,0); stroke: var(--gold2); stroke-width: 1.6; stroke-linejoin: round; }
+.mapburst .dot { fill: #fff8e6; filter: drop-shadow(0 0 6px var(--gold2)); }
+.mapburst .ring { fill: none; stroke: var(--gold2); stroke-width: 2; }
+#app { position: relative; z-index: 1; }
+.screen.out { animation: out .35s ease both; }
+@keyframes out { to { opacity: 0; transform: scale(.92); } }
