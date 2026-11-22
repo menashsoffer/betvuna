@@ -2,7 +2,7 @@
 // Self-healing: on every (re)subscribe, on a gap in join_seq, when the browser comes back online
 // and once a minute, it reloads the whole wall from the server and reconciles.
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { WALL_CHANNEL } from '../shared/config';
+import { SCREEN_PRESENCE_ROLE, WALL_CHANNEL } from '../shared/config';
 import { photoUrl, supabase } from '../shared/supabase';
 import type { WallEntry } from '../shared/types';
 import type { Wall } from './wall';
@@ -13,7 +13,7 @@ export type WallLike = Pick<Wall, 'has' | 'entries' | 'addInstant' | 'enqueue' |
 export type NetStatus = 'online' | 'connecting' | 'offline';
 
 /** Presence shape agreed with the admin panel: it shows "screen connected" when role === 'screen'. */
-const PRESENCE_KEY = 'screen';
+const PRESENCE_KEY = SCREEN_PRESENCE_ROLE;
 
 const RESYNC_EVERY = 60_000;
 const WATCHDOG_EVERY = 15_000;
