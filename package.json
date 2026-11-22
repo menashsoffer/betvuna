@@ -15,8 +15,13 @@
     "@supabase/supabase-js": "2.110.0"
   },
   "devDependencies": {
+    "@geomelon/israel": "1.0.0",
+    "d3-geo": "3.1.1",
+    "israel-geolocation": "1.0.1",
+    "topojson-client": "3.1.0",
     "typescript": "5.7.3",
     "vite": "6.4.5",
-    "vitest": "4.1.12"
+    "vitest": "4.1.12",
+    "world-atlas": "2.0.2"
   }
 }
