@@ -53,7 +53,6 @@ function details(registeredByToken: string | null = null): void {
       <div class="f"><label for="phone">טלפון נייד</label><input id="phone" class="ltr" type="tel" inputmode="tel" autocomplete="tel" required placeholder="050-1234567"></div>
       <div class="f"><label for="email">דוא"ל</label><input id="email" class="ltr" type="email" inputmode="email" autocomplete="email" required></div>
       <div class="f"><label for="city">יישוב מגורים</label><input id="city" autocomplete="off" required role="combobox" aria-autocomplete="list" aria-expanded="false"><div class="ac" hidden></div></div>
-      <label class="chk"><input id="consent" type="checkbox"><span>אני מסכים/ה שהשם, היישוב והתמונה יוצגו על המסך באירוע, ושהפרטים יישמרו אצל בית המדרש ליצירת קשר.</span></label>
       <p class="err" aria-live="polite"></p>
       <button class="btn gold" type="submit">המשך</button>
     </form>
@@ -87,14 +86,12 @@ function details(registeredByToken: string | null = null): void {
     const name = $<HTMLInputElement>('#name').value.trim();
     const phone = $<HTMLInputElement>('#phone').value;
     const email = $<HTMLInputElement>('#email').value.trim();
-    const consent = $<HTMLInputElement>('#consent').checked;
     const match = findCity(cities, city.value);
     const problems: [string, string][] = [];
     if (name.length < 2) problems.push(['#name', 'צריך שם מלא.']);
     if (!normalizePhone(phone)) problems.push(['#phone', MESSAGES.invalid_phone]);
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) problems.push(['#email', 'כתובת הדוא"ל לא נראית תקינה.']);
     if (!match && cities.length) problems.push(['#city', 'בחר יישוב מהרשימה.']);
-    if (!consent) problems.push(['#consent', MESSAGES.consent_required]);
     el.querySelectorAll('input').forEach((i) => i.removeAttribute('aria-invalid'));
     problems.forEach(([s]) => $(s).setAttribute('aria-invalid', 'true'));
     if (problems.length) { err.textContent = problems[0][1]; $(problems[0][0]).focus(); return; }
@@ -210,7 +207,7 @@ async function joinScreen(): Promise<void> {
   const action = main.joined
     ? `<div class="locked">כבר בנבחרת השגרירים · השגריר ה-${main.join_seq}</div>`
     : isOpen
-      ? `<button class="join" data-join>אני מצטרף להיות שגריר של תורה והלכה<small>השם והתמונה יופיעו עכשיו על המסך הגדול</small></button>`
+      ? `<button class="join" data-join>אני מצטרף להיות שגריר של תורה והלכה</button>`
       : `<div class="locked">${MESSAGES.join_closed}</div>`;
 
   const el = show(`
