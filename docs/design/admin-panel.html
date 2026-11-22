@@ -1,0 +1,126 @@
+<title>פאנל האדמין</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Frank+Ruhl+Libre:wght@900&display=swap">
+<style>
+/* Layout: one desktop-width admin mock (top bar, control strip, stats, filterable table, side drawer) inside a scroll container, then numbered notes; single dark theme like the rest of the system */
+:root{--bg:#05070f;--panel:#0c1330;--panel2:#111a3d;--fg:#eef0f6;--muted:#9aa3bd;--gold:#e3b45a;--gold2:#f6d58e;--line:#243056;--ok:#7fc48a;--warn:#e9a14a;--bad:#e06a6a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Heebo",system-ui,sans-serif;direction:rtl;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{margin:0;font-size:clamp(1.4rem,3vw,2rem)}
+.intro p{margin:6px 0 0;color:var(--muted);max-width:78ch;line-height:1.6}
+.frame{overflow-x:auto;border-radius:12px;box-shadow:0 0 0 1px var(--line),0 18px 50px rgba(0,0,0,.55)}
+.app{min-width:1100px;background:linear-gradient(180deg,#0a1030,#070b1e);font-size:13px}
+.top{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.top img{height:30px}
+.top .ttl{font-family:"Frank Ruhl Libre",serif;font-weight:900;color:var(--gold);font-size:19px}
+.top .who{margin-right:auto;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);display:inline-block}
+.ctl{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:12px;padding:16px 20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:11.5px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+.tog{display:flex;background:var(--panel2);border-radius:10px;padding:3px;gap:3px}
+.tog span{flex:1;text-align:center;padding:7px 6px;border-radius:8px;font-weight:700;color:var(--muted)}
+.tog span.on{background:var(--gold);color:#1a1200}
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:9px;padding:8px 12px;font-weight:700;border:1px solid var(--line);background:var(--panel2);color:var(--fg);white-space:nowrap}
+.b.gold{background:var(--gold);border-color:var(--gold);color:#1a1200}
+.b.red{border-color:rgba(224,106,106,.6);color:#f2a3a3}
+.b.sm{padding:4px 8px;font-size:11.5px;border-radius:7px}
+.hint{font-size:11px;color:var(--muted);line-height:1.45}
+.stats{display:flex;gap:12px;padding:0 20px 14px}
+.st{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.st b{display:block;font-size:26px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--gold2);line-height:1.1}
+.st span{color:var(--muted);font-size:11.5px}
+.main{display:grid;grid-template-columns:1fr 300px;gap:14px;padding:0 20px 20px}
+.tbl{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.bar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.search{flex:1;max-width:280px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;color:var(--muted)}
+.chip{padding:5px 10px;border-radius:20px;border:1px solid var(--line);color:var(--muted);font-size:11.5px}
+.chip.on{border-color:var(--gold);color:var(--gold2);background:rgba(227,180,90,.1)}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:right;padding:8px 10px;border-bottom:1px solid rgba(36,48,86,.7);white-space:nowrap}
+th{font-size:11px;color:var(--muted);font-weight:500}
+td.ltr{direction:ltr;text-align:right;font-variant-numeric:tabular-nums;color:#c9cfe0}
+tr.sel{background:rgba(227,180,90,.08)}
+.av{width:34px;height:34px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px var(--gold);display:block}
+.av.hid{box-shadow:0 0 0 2px var(--bad);opacity:.45}
+.av.ini{display:grid;place-items:center;background:#1b2856;font-weight:800;font-size:12px;color:var(--gold2)}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.p-ok{background:rgba(127,196,138,.14);color:var(--ok)}
+.p-wait{background:rgba(154,163,189,.14);color:var(--muted)}
+.p-hide{background:rgba(224,106,106,.14);color:#f2a3a3}
+.drawer{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;align-self:start}
+.drawer .big{width:110px;height:110px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--gold);margin:4px auto}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld label{font-size:10.5px;color:var(--muted)}
+.fld div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.notes div{border-top:2px solid var(--gold);padding-top:8px;color:var(--muted);font-size:.92rem;line-height:1.6}
+.notes b{display:block;color:var(--fg)}
+.modal{position:absolute;inset:0;background:rgba(3,5,12,.6);display:grid;place-items:center}
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>פאנל האדמין</h1>
+    <p>מסך אחד למחשב של הצוות. הוא נפתח רק אחרי כניסה עם קישור במייל, לכתובות המורשות בלבד. בדוגמה המצב באמצע הערב: 98 נרשמו, 36 כבר הצטרפו, ואחד השגרירים פתוח לעריכה בצד.</p>
+  </div>
+  <div class="frame"><div class="app">
+    <div class="top"><img src="assets/logo_beit_midrash_gold.png" alt=""><span class="ttl">נבחרת השגרירים · ניהול</span>
+      <div class="who"><span><span class="dot"></span> מסך האולם מחובר</span><span>·</span><span style="direction:ltr">admin@example.com</span><span class="b sm">יציאה</span></div></div>
+    <div class="ctl">
+      <div class="card"><h3>כפתור ההצטרפות בטלפונים</h3><div class="tog"><span class="on">פתוח</span><span>נעול עד אות מהבמה</span></div><div class="hint">במצב נעול הטלפונים מציגים "המתן לאות מהבמה" ונפתחים לבד כשמשנים לפתוח.</div></div>
+      <div class="card"><h3>בדיקות לפני האירוע</h3><span class="b">הרץ סימולציה · 40 שגרירים</span><div class="hint">שגרירים מדומים מסומנים ולא נכנסים לייצוא.</div></div>
+      <div class="card"><h3>איפוס</h3><span class="b red">איפוס מסך</span><div class="hint">מנקה את הקיר ואת סימוני ההצטרפות. הנרשמים נשארים. דורש הקלדת "אפס".</div></div>
+      <div class="card"><h3>ייצוא</h3><span class="b gold">הורד CSV לאקסל</span><div class="hint">שגרירים שהצטרפו, או כל הנרשמים. נפתח תקין בעברית.</div></div>
+    </div>
+    <div class="stats">
+      <div class="st"><b>98</b><span>נרשמו</span></div>
+      <div class="st"><b>36</b><span>הצטרפו לנבחרת</span></div>
+      <div class="st"><b>24</b><span>יישובים</span></div>
+      <div class="st"><b>7</b><span>בלי תמונה</span></div>
+      <div class="st"><b>1</b><span>תמונות מוסתרות</span></div>
+    </div>
+    <div class="main">
+      <div class="tbl">
+        <div class="bar"><div class="search">חיפוש לפי שם או טלפון</div><span class="chip on">הכל · 98</span><span class="chip">הצטרפו · 36</span><span class="chip">עוד לא · 62</span><span class="chip">בלי תמונה · 7</span><span class="b sm gold" style="margin-right:auto">+ רישום ידני</span></div>
+        <table><thead><tr><th></th><th>שם</th><th>טלפון</th><th>דוא"ל</th><th>יישוב</th><th>נרשם</th><th>מצב</th><th></th></tr></thead><tbody id="tb"></tbody></table>
+      </div>
+      <div class="drawer">
+        <div class="big" id="bigav"></div>
+        <div class="row2"><span class="b sm">החלף תמונה</span><span class="b sm red">הסתר תמונה</span></div>
+        <div class="fld"><label>שם</label><div>יוסף כהן</div></div>
+        <div class="fld"><label>טלפון</label><div style="direction:ltr;text-align:right">050-123-4567</div></div>
+        <div class="fld"><label>דוא"ל</label><div style="direction:ltr;text-align:right">yosef@example.com</div></div>
+        <div class="fld"><label>יישוב</label><div>אלעד</div></div>
+        <div class="hint">נרשם 18:42 · הצטרף 20:31 · השגריר ה-36</div>
+        <div class="row2"><span class="b sm gold">שמור</span><span class="b sm">הסר מהמסך</span></div>
+      </div>
+    </div>
+  </div></div>
+  <div class="notes">
+    <div><b>שליטה בערב</b>מתג הכפתור, סימולציה, איפוס וייצוא נמצאים בשורה אחת למעלה, כדי שמי שמפעיל את הערב לא יחפש.</div>
+    <div><b>תמונות</b>אין אישור מראש. תמונה לא תקינה מסתירים בלחיצה, ואז השגריר מוצג עם ראשי תיבות. אפשר גם להעלות תמונה אחרת במקומה. השינוי מופיע על המסך מיד.</div>
+    <div><b>רישום ידני</b>למי שאין לו טלפון: ממלאים פרטים, מצלמים במצלמת המחשב או מעלים קובץ, ולוחצים "צרף לנבחרת" בשמו.</div>
+    <div><b>מצב המסך</b>הנקודה הירוקה למעלה מראה שמסך האולם מחובר ומקבל עדכונים. אם הוא מתנתק, היא הופכת לאדומה.</div>
+  </div>
+</div>
+
+<script>
+const face=(h,sk)=>`<svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"><rect width="100" height="100" fill="hsl(${h} 25% 36%)"/><path d="M10 100 C12 80 30 70 50 70 C70 70 88 80 90 100 Z" fill="#1d222b"/><rect x="43" y="54" width="14" height="18" rx="5" fill="${sk}"/><ellipse cx="50" cy="44" rx="16" ry="19" fill="${sk}"/><path d="M33 37 C34 22 66 22 67 37 C61 31 39 31 33 37 Z" fill="#14161a"/></svg>`;
+const rows=[["יוסף כהן","050-123-4567","yosef@example.com","אלעד","18:42","ok","20:31",205,'#c9a07a',1],
+["שמעון לוי","052-718-2290","shimon.l@example.com","בני ברק","18:44","ok","20:30",30,'#b98a5e'],
+["דוד רוזן","054-311-0087","drozen@example.com","ירושלים","18:47","ok","20:30",170,'#d0a682'],
+["אליהו ברגר","053-662-1401","eli.b@example.com","בית שמש","18:51","wait","",260,'#a87c55'],
+["חיים שפירא","050-904-7733","chaim@example.com","מודיעין עילית","18:55","hide","20:29",15,'#c49a74'],
+["נחום סגל","058-220-6512","nsegal@example.com","פתח תקווה","19:02","ok","20:29",190,'#b88760'],
+["עזרא טל","052-447-9018","ezra.tal@example.com","ירושלים","19:05","wait","",-1],
+["יעקב לנדאו","054-889-3356","ylandau@example.com","ביתר עילית","19:11","wait","",140,'#c79a6e']];
+const lbl={ok:t=>`<span class="pill p-ok">הצטרף ${t}</span>`,wait:()=>`<span class="pill p-wait">עוד לא</span>`,hide:t=>`<span class="pill p-hide">תמונה מוסתרת</span>`};
+document.getElementById('tb').innerHTML=rows.map(r=>{const[n,ph,em,c,reg,st,t,h,sk,sel]=r;
+  const av=h<0?`<span class="av ini">ע״ט</span>`:`<span class="av${st==='hide'?' hid':''}">${face(h,sk)}</span>`;
+  const act=st==='wait'?'<span class="b sm">צרף לנבחרת</span>':'<span class="b sm">עריכה</span>';
+  return `<tr${sel?' class="sel"':''}><td>${av}</td><td><b>${n}</b></td><td class="ltr">${ph}</td><td class="ltr">${em}</td><td>${c}</td><td class="ltr">${reg}</td><td>${lbl[st](t)}</td><td>${act}</td></tr>`}).join('');
+document.getElementById('bigav').innerHTML=face(205,'#c9a07a');
+</script>

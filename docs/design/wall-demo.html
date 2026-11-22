@@ -1,0 +1,194 @@
+<title>להאיר את הארץ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Frank+Ruhl+Libre:wght@700;900&display=swap">
+<style>
+/* Layout: one full-width 16:9 hall-screen stage (live simulation) above a row of controls; deliberately single dark theme to match the hall screen */
+:root{--bg:#05070f;--panel:#0d1326;--fg:#f3e6c4;--muted:#a99d80;--gold:#e3b45a;--gold2:#f6d58e;--navy:#16224a;--line:#2a3352;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Heebo",system-ui,sans-serif;direction:rtl;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+.wrap{max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.intro h1{margin:0;font-size:clamp(1.4rem,3vw,2rem)}
+.intro p{margin:4px 0 0;color:var(--muted);max-width:75ch;line-height:1.6}
+.stage{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:radial-gradient(60% 75% at 50% 52%,#13204a 0%,#0a1130 45%,#050815 100%);box-shadow:0 16px 50px rgba(0,0,0,.6);container-type:inline-size}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 12cqw rgba(0,0,0,.65)}
+.hdr{position:absolute;top:1.6cqw;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2.2cqw;z-index:3;white-space:nowrap}
+.hdr img{height:6.4cqw;width:auto;max-width:none}
+.hdr img.bt{height:7.4cqw;margin-block:-.5cqw}
+.hdr .t{text-align:center;line-height:1}
+.hdr b{display:block;font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:3.6cqw;color:var(--gold);text-shadow:0 0 2cqw rgba(227,180,90,.35)}
+.hdr span{display:block;font-size:1.35cqw;color:var(--fg);opacity:.85;margin-top:.7cqw;letter-spacing:.02em}
+.light{position:absolute;top:0;bottom:0;width:17cqw;z-index:2;pointer-events:none}
+.light.r{right:1cqw}.light.l{left:1cqw}
+.light .lamp{position:absolute;top:3cqw;left:50%;transform:translateX(-50%);width:4.4cqw;height:1.4cqw;border-radius:50% 50% .4cqw .4cqw;background:linear-gradient(#f9e3a8,#c9953d);box-shadow:0 0 2.5cqw 1cqw rgba(246,213,142,.55)}
+.light .beam{position:absolute;top:4cqw;left:50%;transform:translateX(-50%) rotate(0deg);transform-origin:50% 0;animation:sway 7s ease-in-out infinite alternate,flick 5.3s steps(1,end) infinite;width:17cqw;height:44cqw;clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(246,213,142,.55) 0%,rgba(227,180,90,.22) 45%,rgba(227,180,90,.05) 100%);filter:blur(.3cqw)}
+.light .pool{position:absolute;top:44cqw;left:50%;transform:translateX(-50%);width:20cqw;height:5cqw;border-radius:50%;background:radial-gradient(closest-side,rgba(246,213,142,.55),transparent)}
+.light .val{position:absolute;top:22cqw;left:0;right:0;text-align:center;line-height:1}
+.light .val b{display:block;font-weight:900;font-size:7.4cqw;color:#fff;text-shadow:0 0 2.5cqw rgba(246,213,142,.9),0 0 .4cqw rgba(246,213,142,.9);font-variant-numeric:tabular-nums}
+.light .val span{display:block;margin-top:.8cqw;font-family:"Frank Ruhl Libre",serif;font-weight:700;font-size:2cqw;color:#1a1200;background:linear-gradient(90deg,transparent,rgba(246,213,142,.9) 20%,rgba(246,213,142,.9) 80%,transparent);padding:.3cqw 0}
+.light.l .beam{animation-delay:-3.1s,-1.7s;animation-duration:8.3s,6.1s}
+@keyframes sway{0%{transform:translateX(-50%) rotate(-3.2deg)}100%{transform:translateX(-50%) rotate(3.2deg)}}
+@keyframes flick{0%,100%{opacity:1}31%{opacity:.86}32%{opacity:1}57%{opacity:.93}58%{opacity:.78}59%{opacity:1}83%{opacity:.9}84%{opacity:1}}
+.light .lamp{animation:glow 3.4s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 2cqw .8cqw rgba(246,213,142,.45)}to{box-shadow:0 0 3.4cqw 1.4cqw rgba(246,213,142,.7)}}
+.light .pool{animation:breathe 7s ease-in-out infinite alternate}
+.light.l .pool{animation-delay:-3.1s;animation-duration:8.3s}
+@keyframes breathe{0%{transform:translateX(-58%) scale(.92);opacity:.75}100%{transform:translateX(-42%) scale(1.06);opacity:1}}
+.light .dust{position:absolute;top:4cqw;left:50%;width:17cqw;height:44cqw;transform:translateX(-50%);clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);overflow:hidden}
+.light .dust i{position:absolute;width:.28cqw;height:.28cqw;border-radius:50%;background:#fff6dc;box-shadow:0 0 .5cqw #f6d58e;opacity:0;animation:mote linear infinite}
+@keyframes mote{0%{transform:translate(0,0);opacity:0}15%{opacity:.8}85%{opacity:.6}100%{transform:translate(var(--dx),-14cqw);opacity:0}}
+.light.flare .beam{animation:flare .9s ease-out,sway 7s ease-in-out infinite alternate}
+.light.flare .val b{animation:pulse .9s ease-out}
+@keyframes pulse{30%{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.light .beam,.light .lamp,.light .pool,.light .dust i{animation:none}}
+@keyframes flare{0%{filter:blur(.3cqw) brightness(1)}30%{filter:blur(.3cqw) brightness(1.9)}100%{filter:blur(.3cqw) brightness(1)}}
+.map{position:absolute;transition:all 1.1s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 1.6cqw rgba(227,180,90,.35));z-index:1}
+.c{position:absolute;border-radius:50%;transition:left 1.1s cubic-bezier(.4,0,.2,1),top 1.1s cubic-bezier(.4,0,.2,1),width 1.1s cubic-bezier(.4,0,.2,1),height 1.1s cubic-bezier(.4,0,.2,1),box-shadow .6s;z-index:2}
+.c .ph{position:absolute;inset:0;border-radius:50%;overflow:hidden;box-shadow:0 0 0 calc(var(--d)*.045) var(--gold),0 .4cqw 1.2cqw rgba(0,0,0,.5);background:#222}
+.c svg{width:100%;height:100%;display:block}
+.c .nm{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:calc(var(--d)*.07);white-space:nowrap;text-align:center;line-height:1.1;font-size:calc(var(--d)*.15);color:#fff;font-weight:700;text-shadow:0 1px 4px #000;transition:opacity .5s}
+.c .nm small{display:block;font-weight:400;color:var(--muted);font-size:.8em}
+.c.tiny .nm{opacity:0}
+.c.spot{z-index:5}
+.c.spot .ph{box-shadow:0 0 0 calc(var(--d)*.04) var(--gold2),0 0 6cqw rgba(246,213,142,.75)}
+.c.spot .nm{font-size:calc(var(--d)*.13);font-family:"Frank Ruhl Libre",serif}
+.c.spot .nm small{font-family:"Heebo",sans-serif}
+.c.in{animation:popin .7s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes popin{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+.orbit{position:absolute;border-radius:50%;border:1px solid rgba(227,180,90,.22);box-shadow:0 0 1.2cqw rgba(227,180,90,.06);transition:all 1.1s cubic-bezier(.4,0,.2,1);z-index:1;pointer-events:none}
+.dim{position:absolute;inset:0;background:rgba(3,5,12,.55);opacity:0;transition:opacity .5s;z-index:4;pointer-events:none}
+.dim.on{opacity:1}
+.ripple{animation:rip 2.2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes rip{0%{transform:scale(.4);opacity:.9}100%{transform:scale(3);opacity:0}}
+@media (prefers-reduced-motion:reduce){.map,.c{transition:none}.c.in{animation:none}.ripple{animation:none}}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ctl button{font:inherit;font-weight:700;font-size:.95rem;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+.ctl button.pri{background:var(--gold);color:#1a1200;border-color:var(--gold)}
+.ctl button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.ctl label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.note{color:var(--muted);font-size:.9rem;max-width:80ch;line-height:1.6;margin:0}
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>להאיר את הארץ</h1>
+    <p>הדמיה חיה. הכותרת ושני הלוגואים למעלה באמצע, ומשני הצדדים שני אורות: באחד מספר השגרירים ובשני מספר היישובים. באמצע ארץ ישראל, וסביבה טבעות עגולות של בוגרים שמתמלאות. כל מצטרף מופיע קודם בגדול עם שמו ונוחת על הטבעת, ואז מחליק למטה כמו בכוח כבידה, כך שהטבעת החיצונית מתמלאת מלמטה בצורת חצי חיוך. האורות בצדדים מתנדנדים ומהבהבים קלות כמו פנסים אמיתיים.</p>
+  </div>
+  <div class="stage" id="stage">
+    <div class="hdr"><img src="assets/logo_beit_midrash_gold.png" alt="בית המדרש תורה והלכה"><div class="t"><b>נבחרת השגרירים</b><span>מאירים את הארץ בנקודות של תורה</span></div><img class="bt" src="assets/logo_batvuna_gold.png" alt="בתבונה"></div>
+    <div class="light r" id="lr"><div class="beam"></div><div class="dust"></div><div class="lamp"></div><div class="pool"></div><div class="val"><b id="num">0</b><span>שגרירים</span></div></div>
+    <div class="light l" id="ll"><div class="beam"></div><div class="dust"></div><div class="lamp"></div><div class="pool"></div><div class="val"><b id="nc">0</b><span>יישובים</span></div></div>
+    <div class="dim" id="dim"></div>
+  </div>
+  <div class="ctl">
+    <button class="pri" id="play">השהה</button>
+    <button id="one">הוסף שגריר</button>
+    <button id="fill">קפוץ ל-40</button>
+    <button id="reset">התחל מחדש</button>
+    <label><input type="checkbox" id="fast"> מהירות כפולה</label>
+  </div>
+  <p class="note">ההדמיה רצה לבד עד 70 שגרירים. הצלליות מחליפות כאן את הסלפי האמיתיים. במערכת האמיתית אותו דבר קורה ברגע שמישהו לוחץ על הכפתור בטלפון.</p>
+</div>
+
+<script>
+const GEO={"W":200,"H":440,"paths":["M139.1,217.6L139.1,223.9L139.1,225.1L138.4,227.5L136.7,231.9L135.0,235.1L135.7,235.8L135.7,238.3L134.4,240.7L133.3,243.3L133.7,246.2L134.7,249.2L135.7,251.3L137.1,254.0L137.8,257.0L137.1,260.2L132.7,268.9L132.3,272.2L132.3,275.5L131.3,277.6L128.6,280.0L127.6,281.1L126.2,283.7L125.9,286.1L126.2,288.7L125.9,291.1L125.2,292.0L123.5,293.5L122.9,294.4L122.2,295.7L121.8,296.8L121.5,299.6L120.8,302.4L115.4,313.4L111.3,326.9L110.7,329.5L109.3,333.9L109.3,336.5L109.6,337.6L111.0,339.8L111.3,341.5L111.0,342.9L110.7,344.0L110.0,345.3L109.3,346.6L108.3,352.3L107.6,354.1L107.6,357.3L109.6,363.9L109.6,367.4L108.0,371.0L104.2,377.1L102.9,381.3L102.9,382.6L102.5,383.5L102.2,384.4L101.9,385.3L101.2,389.0L100.8,395.6L100.5,397.8L96.1,409.7L95.4,412.4L95.1,418.5L94.1,421.2L92.7,423.2L92.0,425.6L91.7,428.5L91.4,430.0L90.7,430.9L89.3,432.9L88.3,434.2L88.0,434.9L88.0,435.6L87.6,436L87.0,436L86.0,436L85.3,436L84.6,434.4L82.2,430.0L81.5,427.4L81.9,419.9L79.5,408.8L75.8,398.5L71.7,387.2L71.1,381.3L71.1,380.6L71.1,380.0L71.1,379.3L70.7,378.7L67.0,368.3L61.6,352.3L58.2,343.3L57.2,341.6L52.1,337.2L51.4,336.1L51.4,334.8L51.4,333.0L52.4,329.7L52.4,328.2L51.4,326.9L50.1,324.9L49.4,323.0L49.0,318.4L47.0,309.8L41.3,294.4L36.5,281.8L32.8,272.2L30.1,262.9L26.4,251.4L25.3,248.3L23.7,243.1L23.0,241.2L20.6,237.1L23.0,235.7L24.3,234.0L28.4,230.3L30.4,226.7L34.8,223.4L36.5,220.0L43.6,212.8L47.0,207.9L47.4,207.4L48.0,205.5L50.4,202.5L58.5,188.1L59.2,187.2L64.6,175.2L67.0,169.4L69.0,166.6L71.7,156.9L72.1,156.3L71.7,155.2L71.7,154.7L73.1,153.9L80.9,130.1L83.9,113.5L87.0,98.8L87.6,97.9L88.0,92.8L88.7,91.3L88.3,89.8L90.7,80.6L91.0,70.5L91.7,68.3L93.1,67.5L94.4,67.9L96.4,69.0L97.8,69.4L98.5,69.2L101.9,65.6L102.2,64.7L103.2,61.9L103.6,60.3L103.2,59.0L102.2,58.4L102.5,56.7L103.2,49.9L104.6,46.3L104.9,44.1L104.6,42.2L104.9,41.8L105.6,41.0L105.9,40.6L105.2,39.9L105.9,39.9L113.4,40.5L113.7,40.3L114.7,39.3L115.4,39.1L116.1,39.1L117.4,39.5L118.1,39.5L121.5,38.4L122.5,38.4L123.2,38.8L123.5,38.9L124.9,39.7L125.6,40.8L126.2,42.2L127.3,43.3L128.6,43.5L133.7,42.2L138.1,40.3L141.1,39.9L141.5,38.2L143.5,35.1L144.2,33.3L144.5,30.4L144.9,24.9L145.5,22.4L146.6,20.9L146.9,19.2L147.6,18.3L148.9,18.1L149.3,18.8L151.0,21.5L152.3,22.4L152.6,22.8L153.0,22.4L152.6,20.3L153.3,19.4L154.7,19.2L156.4,18.8L158.1,17.3L161.8,13.5L163.5,13.1L164.5,12.9L165.8,12.6L167.2,12.0L168.2,11.2L169.9,9.5L171.6,5.7L173.3,4L173.3,4.8L173.0,5.3L172.6,7.2L172.3,7.8L172.3,9.3L170.6,10.5L169.9,11.2L167.9,12.2L171.3,14.6L168.2,19.2L168.9,20.0L171.6,21.9L171.9,27.2L174.0,28.5L174.3,31.7L173.3,33.8L172.3,35.5L172.3,37.2L175.7,38.8L175.7,40.3L176.7,50.9L177.4,52.2L179.4,56.0L178.0,58.4L177.4,58.6L176.0,61.5L174.7,64.9L175.0,66.2L174.3,69.0L169.6,74.7L167.2,78.5L165.5,78.9L160.4,82.1L157.4,84.9L155.7,85.7L153.7,85.5L152.0,86.6L150.3,88.5L149.6,89.2L148.9,89.6L148.6,90.0L148.6,90.9L148.9,91.7L149.9,92.3L149.9,92.8L149.3,92.8L149.3,93.8L149.6,94.7L149.9,97.5L150.6,99.0L150.3,99.6L149.9,99.6L149.9,99.4L149.9,99.0L149.6,99.4L149.3,100.5L148.6,99.8L148.9,102.1L149.3,102.8L147.9,102.8L147.9,103.6L148.2,103.6L148.9,103.6L149.6,104.5L149.6,105.1L150.6,106.0L150.6,106.6L149.6,106.9L149.3,107.5L148.9,108.3L148.6,109.0L148.9,109.2L149.3,109.4L149.3,109.6L149.9,109.8L149.9,110.5L149.3,110.9L148.6,111.3L149.3,112.0L147.9,112.8L148.2,113.0L148.6,113.0L148.6,113.5L147.9,113.5L147.9,114.3L148.6,114.9L148.6,115.2L148.2,115.6L147.2,115.8L147.6,116.9L147.9,117.3L148.2,117.9L148.6,118.6L148.9,119.4L149.3,120.5L148.6,120.5L148.6,119.6L147.9,119.6L147.9,120.5L148.2,121.4L148.2,124.8L149.3,126.5L148.9,127.8L148.6,129.9L148.9,132.0L149.9,133.3L149.3,133.6L148.9,133.8L148.6,134.2L148.6,135.0L149.9,135.0L148.6,140.2L148.2,141.9L148.6,143.2L148.6,144.2L147.9,144.5L147.2,144.9L147.2,145.7L147.9,146.2L146.2,149.0L146.2,150.3L147.2,151.7L145.5,153.0L145.2,154.8L145.2,160.1L146.2,162.5L146.6,163.8L146.6,165.3L146.9,166.3L147.2,167.4L147.2,168.3L146.9,168.9L146.2,169.1L145.5,169.3L145.2,170.2L147.6,179.2L146.6,180.5L146.6,181.2L148.6,187.2L145.5,190.6L143.2,196.2L141.1,201.0L139.8,209.0L139.1,217.2Z"],"pts":{"ירושלים":[115.7,186.8],"תל אביב":[75.3,152.4],"חיפה":[95,73.3],"באר שבע":[76.2,244.1],"בני ברק":[80,151.3],"אלעד":[91.3,155.7],"בית שמש":[95,189],"מודיעין עילית":[99.7,169.1],"צפת":[143,54.3],"טבריה":[145.8,73.3],"אשדוד":[63.1,183.5],"פתח תקווה":[85.6,151.3],"נתניה":[82.8,124.6],"אילת":[91.3,428.4],"קרית גת":[73.4,204.5],"עפולה":[123.3,93.4],"אופקים":[60.2,237.5],"ביתר עילית":[107.3,194.5],"רחובות":[78.1,173.5],"קרית שמונה":[149.6,26.2],"נתיבות":[57.4,225.4],"חדרה":[88.5,112.4],"כרמיאל":[124.2,58.8],"דימונה":[98.8,263.9]},"dots":[[158,18],[165,18],[151,25],[158,25],[165,25],[151,32],[158,32],[165,32],[172,32],[123,39],[144,39],[151,39],[158,39],[165,39],[172,39],[109,46],[116,46],[123,46],[130,46],[137,46],[144,46],[151,46],[158,46],[165,46],[172,46],[109,53],[116,53],[123,53],[130,53],[137,53],[144,53],[151,53],[158,53],[165,53],[172,53],[109,60],[116,60],[123,60],[130,60],[137,60],[144,60],[151,60],[158,60],[165,60],[172,60],[102,67],[109,67],[116,67],[123,67],[130,67],[137,67],[144,67],[151,67],[158,67],[165,67],[172,67],[95,74],[102,74],[109,74],[116,74],[123,74],[130,74],[137,74],[144,74],[151,74],[158,74],[165,74],[95,81],[102,81],[109,81],[116,81],[123,81],[130,81],[137,81],[144,81],[151,81],[158,81],[95,88],[102,88],[109,88],[116,88],[123,88],[130,88],[137,88],[144,88],[88,95],[95,95],[102,95],[109,95],[116,95],[123,95],[130,95],[137,95],[144,95],[88,102],[95,102],[102,102],[109,102],[116,102],[123,102],[130,102],[137,102],[144,102],[88,109],[95,109],[102,109],[109,109],[116,109],[123,109],[130,109],[137,109],[144,109],[88,116],[95,116],[102,116],[109,116],[116,116],[123,116],[130,116],[137,116],[144,116],[88,123],[95,123],[102,123],[109,123],[116,123],[123,123],[130,123],[137,123],[144,123],[81,130],[88,130],[95,130],[102,130],[109,130],[116,130],[123,130],[130,130],[137,130],[144,130],[81,137],[88,137],[95,137],[102,137],[109,137],[116,137],[123,137],[130,137],[137,137],[144,137],[81,144],[88,144],[95,144],[102,144],[109,144],[116,144],[123,144],[130,144],[137,144],[144,144],[81,151],[88,151],[95,151],[102,151],[109,151],[116,151],[123,151],[130,151],[137,151],[144,151],[74,158],[81,158],[88,158],[95,158],[102,158],[109,158],[116,158],[123,158],[130,158],[137,158],[144,158],[74,165],[81,165],[88,165],[95,165],[102,165],[109,165],[116,165],[123,165],[130,165],[137,165],[144,165],[67,172],[74,172],[81,172],[88,172],[95,172],[102,172],[109,172],[116,172],[123,172],[130,172],[137,172],[144,172],[67,179],[74,179],[81,179],[88,179],[95,179],[102,179],[109,179],[116,179],[123,179],[130,179],[137,179],[144,179],[60,186],[67,186],[74,186],[81,186],[88,186],[95,186],[102,186],[109,186],[116,186],[123,186],[130,186],[137,186],[144,186],[60,193],[67,193],[74,193],[81,193],[88,193],[95,193],[102,193],[109,193],[116,193],[123,193],[130,193],[137,193],[144,193],[53,200],[60,200],[67,200],[74,200],[81,200],[88,200],[95,200],[102,200],[109,200],[116,200],[123,200],[130,200],[137,200],[53,207],[60,207],[67,207],[74,207],[81,207],[88,207],[95,207],[102,207],[109,207],[116,207],[123,207],[130,207],[137,207],[46,214],[53,214],[60,214],[67,214],[74,214],[81,214],[88,214],[95,214],[102,214],[109,214],[116,214],[123,214],[130,214],[137,214],[39,221],[46,221],[53,221],[60,221],[67,221],[74,221],[81,221],[88,221],[95,221],[102,221],[109,221],[116,221],[123,221],[130,221],[137,221],[32,228],[39,228],[46,228],[53,228],[60,228],[67,228],[74,228],[81,228],[88,228],[95,228],[102,228],[109,228],[116,228],[123,228],[130,228],[137,228],[25,235],[32,235],[39,235],[46,235],[53,235],[60,235],[67,235],[74,235],[81,235],[88,235],[95,235],[102,235],[109,235],[116,235],[123,235],[130,235],[25,242],[32,242],[39,242],[46,242],[53,242],[60,242],[67,242],[74,242],[81,242],[88,242],[95,242],[102,242],[109,242],[116,242],[123,242],[130,242],[32,249],[39,249],[46,249],[53,249],[60,249],[67,249],[74,249],[81,249],[88,249],[95,249],[102,249],[109,249],[116,249],[123,249],[130,249],[32,256],[39,256],[46,256],[53,256],[60,256],[67,256],[74,256],[81,256],[88,256],[95,256],[102,256],[109,256],[116,256],[123,256],[130,256],[137,256],[32,263],[39,263],[46,263],[53,263],[60,263],[67,263],[74,263],[81,263],[88,263],[95,263],[102,263],[109,263],[116,263],[123,263],[130,263],[39,270],[46,270],[53,270],[60,270],[67,270],[74,270],[81,270],[88,270],[95,270],[102,270],[109,270],[116,270],[123,270],[130,270],[39,277],[46,277],[53,277],[60,277],[67,277],[74,277],[81,277],[88,277],[95,277],[102,277],[109,277],[116,277],[123,277],[130,277],[39,284],[46,284],[53,284],[60,284],[67,284],[74,284],[81,284],[88,284],[95,284],[102,284],[109,284],[116,284],[123,284],[46,291],[53,291],[60,291],[67,291],[74,291],[81,291],[88,291],[95,291],[102,291],[109,291],[116,291],[123,291],[46,298],[53,298],[60,298],[67,298],[74,298],[81,298],[88,298],[95,298],[102,298],[109,298],[116,298],[46,305],[53,305],[60,305],[67,305],[74,305],[81,305],[88,305],[95,305],[102,305],[109,305],[116,305],[53,312],[60,312],[67,312],[74,312],[81,312],[88,312],[95,312],[102,312],[109,312],[116,312],[53,319],[60,319],[67,319],[74,319],[81,319],[88,319],[95,319],[102,319],[109,319],[53,326],[60,326],[67,326],[74,326],[81,326],[88,326],[95,326],[102,326],[109,326],[53,333],[60,333],[67,333],[74,333],[81,333],[88,333],[95,333],[102,333],[109,333],[60,340],[67,340],[74,340],[81,340],[88,340],[95,340],[102,340],[109,340],[60,347],[67,347],[74,347],[81,347],[88,347],[95,347],[102,347],[109,347],[67,354],[74,354],[81,354],[88,354],[95,354],[102,354],[67,361],[74,361],[81,361],[88,361],[95,361],[102,361],[67,368],[74,368],[81,368],[88,368],[95,368],[102,368],[109,368],[74,375],[81,375],[88,375],[95,375],[102,375],[74,382],[81,382],[88,382],[95,382],[102,382],[74,389],[81,389],[88,389],[95,389],[81,396],[88,396],[95,396],[81,403],[88,403],[95,403],[81,410],[88,410],[95,410],[88,417],[95,417],[88,424],[88,431]]};const NS='http://www.w3.org/2000/svg';
+const stage=document.getElementById('stage');
+const firsts=["משה","יוסף","דוד","שמעון","אליהו","חיים","ראובן","נחום","עזרא","יעקב","ברוך","צבי","קלמן","תמיר","גדליה","לוי","פנחס","הלל","שלמה","זאב","אריה","טוביה","מנחם","אהרן","יחיאל","שאול","דניאל","נתן","רפאל","חנוך","בנימין","אברהם","עמרם","איתמר","נועם","יהודה","מרדכי","אלחנן","שמואל","יצחק"];
+const lasts=["לוי","כהן","אברהם","רוזן","ברגר","שפירא","גולד","סגל","טל","לנדאו","מזרחי","פרידמן","הלוי","וייס","זילבר","דהן","כץ","נחמני","ישראלי","ענבי","קליין","צור","שטרן","רבינוביץ","חדד","בן דוד","מור","אוחנה","לוין","גרין","סופר","ביטון","גל","שלו","אדלר","פרץ","עמר","ברק"];
+const cities=Object.keys(GEO.pts), weights=cities.map(c=>({"ירושלים":6,"בני ברק":5,"בית שמש":4,"מודיעין עילית":4,"אלעד":3,"ביתר עילית":3,"אשדוד":3,"פתח תקווה":2}[c]||1));
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const pick=()=>{let t=rnd()*weights.reduce((a,b)=>a+b);for(let i=0;i<cities.length;i++){t-=weights[i];if(t<=0)return cities[i]}return cities[0]};
+const pool=[];for(let i=0;i<70;i++)pool.push([firsts[(i*7)%firsts.length]+' '+lasts[(i*11+3)%lasts.length],pick()]);
+const el=(t,a={},p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e};
+function photo(i){const s=el('svg',{viewBox:'0 0 100 100',preserveAspectRatio:'xMidYMid slice'});
+  const h=[210,30,170,260,15,190,45,140][i%8],l=[26,32,22,30,36,28][i%6];
+  const g=el('linearGradient',{id:'g'+i,x1:0,y1:0,x2:0,y2:1},el('defs',{},s));
+  el('stop',{offset:0,'stop-color':`hsl(${h} 22% ${l+18}%)`},g);el('stop',{offset:1,'stop-color':`hsl(${h} 25% ${l}%)`},g);
+  el('rect',{width:100,height:100,fill:`url(#g${i})`},s);
+  const sk=`hsl(${25+(i*7)%15} ${20+(i*5)%20}% ${48+(i*11)%22}%)`,cl=`hsl(${(h+180)%360} 12% ${14+(i*3)%14}%)`;
+  el('path',{d:'M10 100 C12 80 30 70 50 70 C70 70 88 80 90 100 Z',fill:cl},s);
+  el('rect',{x:43,y:54,width:14,height:18,rx:5,fill:sk},s);
+  el('ellipse',{cx:50,cy:44,rx:16,ry:19,fill:sk},s);
+  if(i%3!==1)el('path',{d:'M33 37 C34 22 66 22 67 37 C61 31 39 31 33 37 Z',fill:`hsl(0 0% ${8+(i*4)%14}%)`},s);
+  if(i%4===0)el('path',{d:'M36 50 C38 71 62 71 64 50 C60 63 40 63 36 50 Z',fill:`hsl(20 15% ${15+(i*3)%15}%)`},s);
+  return s}
+// map
+const msvg=el('svg',{viewBox:`0 0 ${GEO.W} ${GEO.H}`,class:'map','aria-hidden':'true'});stage.appendChild(msvg);
+GEO.paths.forEach(d=>el('path',{d,fill:'#16224a',stroke:'#e3b45a','stroke-width':1.6,'stroke-linejoin':'round'},msvg));
+const cityG=el('g',{},msvg);
+const byCity={};
+function drawCities(newCity){cityG.innerHTML='';for(const[c,n]of Object.entries(byCity)){const[x,y]=GEO.pts[c];
+  el('circle',{cx:x,cy:y,r:6+n*2.6,fill:'#e3b45a',opacity:.18},cityG);el('circle',{cx:x,cy:y,r:2.6+n*1.3,fill:'#f6d58e'},cityG);}
+  if(newCity){const[x,y]=GEO.pts[newCity];el('circle',{cx:x,cy:y,r:9,fill:'none',stroke:'#fff','stroke-width':2.2,class:'ripple'},cityG)}}
+// layout
+let W=0,H=0;const people=[];
+const guides=[];
+function guide(k){if(!guides[k]){const g=document.createElement('div');g.className='orbit';stage.insertBefore(g,msvg);guides[k]=g}return guides[k]}
+function layout(){const r=stage.getBoundingClientRect();W=r.width;H=r.height;const N=people.length;
+  const t=Math.min(N/60,1), mapH=H*(0.6-0.3*Math.sqrt(t)), sc=mapH/GEO.H, mapW=GEO.W*sc, cx=W/2, cy=H*.54, mx=cx-mapW/2, my=cy-mapH/2;
+  Object.assign(msvg.style,{left:mx+'px',top:my+'px',height:mapH+'px',width:mapW+'px'});
+  const pts=GEO.dots.map(([x,y])=>[mx+x*sc,my+y*sc]);
+  const hdrBox=[W*.22,0,W*.78,H*.17], cntBox=[0,0,W*.185,H], sideBox=[W*.815,0,W,H], pad=H*.012;
+  const ringsFor=d=>{const lab=d>H*.075?d*.34:0,step=d*1.06+lab,gap=d*(lab?1.34:1.12);
+    const ry0=mapH/2*.78+d*.55, rx0=ry0, rings=[];let total=0;
+    for(let k=0;k<14;k++){const rx=rx0+k*step, ry=ry0+k*step;
+      if(cy-lab*.3+ry+d/2+lab>H-pad||cx-rx-d/2<W*.19)break; // every ring must be fully visible (only the title may cover its top)
+      const r=rx,ccy=cy-lab*.3,n=Math.max(1,Math.floor(2*Math.PI*r/gap)),D=2*Math.PI/n,valid=[];
+      // order positions from the bottom of the ring outward, alternating sides, so a partial ring settles as a smile
+      const order=[0];for(let q=1;order.length<n;q++){order.push(q);if(order.length<n)order.push(n-q)}
+      for(const q of order){const ang=Math.PI/2+q*D,x=cx+r*Math.cos(ang),y=ccy+r*Math.sin(ang);
+        if(x-d/2<pad||x+d/2>W-pad||y-d/2<pad||y+d/2+lab>H-pad)continue;
+        const inBox=b=>x+d/2>b[0]&&x-d/2<b[2]&&y-d/2<b[3]&&y+d/2>b[1];if(inBox(hdrBox)||inBox(cntBox)||inBox(sideBox))continue;
+        let ok=true;const m=d/2+sc*7;for(const[px,py]of pts){const ddy=py>y?Math.max(0,py-y-lab):py-y;if(Math.hypot(px-x,ddy)<m){ok=false;break}}
+        if(ok)valid.push([x,y,ang,r,cx,ccy])}
+      rings.push({rx,ry,valid});total+=valid.length}
+    return{rings,total,lab}};
+  let d=H*.155,R=ringsFor(d);while(R.total<N&&d>14){d*=.95;R=ringsFor(d)}
+  const slots=[];let left=N,used=0;
+  for(const rg of R.rings){if(left<=0)break;const v=rg.valid;if(!v.length)continue;used++;
+    if(left>=v.length){slots.push(...v);left-=v.length}else{slots.push(...v.slice(0,left));left=0}}
+  R.rings.forEach((rg,k)=>{const g=guide(k),on=k<used&&N>0;Object.assign(g.style,{left:(cx-rg.rx)+'px',top:(cy-R.lab*.3-rg.ry)+'px',width:rg.rx*2+'px',height:rg.ry*2+'px',opacity:on?1:0})});
+  for(let k=R.rings.length;k<guides.length;k++)guides[k].style.opacity=0;
+  people.forEach((p,i)=>{p.slot=slots[i];p.d=d;if(p.spot||p.settling||!slots[i])return;const[x,y]=slots[i];place(p.el,x,y,d)});
+  return{slots,d}}
+function place(e,x,y,d){Object.assign(e.style,{left:(x-d/2)+'px',top:(y-d/2)+'px',width:d+'px',height:d+'px'});e.style.setProperty('--d',d+'px');e.classList.toggle('tiny',d<H*.075)}
+// adding
+const dim=document.getElementById('dim'),num=document.getElementById('num'),nc=document.getElementById('nc');
+function flare(id){const e=document.getElementById(id);e.classList.remove('flare');void e.offsetWidth;e.classList.add('flare')}
+const queue=[];let busy=false;
+function add(instant){if(!instant){queue.push(1);if(!busy)next();return}addNow(true)}
+function next(){if(!queue.length){busy=false;return}busy=true;queue.shift();addNow(false)}
+function addNow(instant){if(people.length>=pool.length){busy=false;return}const i=people.length,[n,c]=pool[i];
+  byCity[c]=(byCity[c]||0)+1;drawCities(c);
+  const e=document.createElement('div');e.className='c';e.appendChild(Object.assign(document.createElement('div'),{className:'ph'})).appendChild(photo(i));
+  e.insertAdjacentHTML('beforeend',`<div class="nm">${n}<small>${c}</small></div>`);stage.appendChild(e);
+  const p={el:e,spot:!instant};people.push(p);num.textContent=people.length;const nc0=nc.textContent;nc.textContent=Object.keys(byCity).length;if(!instant){flare('lr');if(nc0!=nc.textContent)flare('ll')}
+  if(instant){layout();return}
+  const D=H*.4;e.style.transition='none';place(e,W/2,H*.5,D);e.classList.add('spot','in');dim.classList.add('on');layout();
+  setTimeout(()=>{e.style.transition='';e.classList.remove('in');requestAnimationFrame(()=>{p.spot=false;p.settling=true;e.classList.remove('spot');dim.classList.remove('on');layout();settle(p);setTimeout(next,350)})},hold())}
+// gravity: land on a random higher point of the ring, then slide down along the ring to the end of the smile
+function settle(p){const s=p.slot;if(!s){p.settling=false;layout();return}const[tx,ty,ta,r,ox,oy]=s,d=p.d;
+  let off=ta-Math.PI/2;off=Math.atan2(Math.sin(off),Math.cos(off));const dir=off===0?(Math.random()<.5?-1:1):Math.sign(off);
+  let sa=ta+dir*(.7+Math.random()*.8);const lim=Math.PI/2+dir*Math.PI*.98;if(dir>0?sa>lim:sa<lim)sa=lim;while(oy+r*Math.sin(sa)-d/2<H*.19&&Math.abs(sa-ta)>.15)sa-=dir*.05;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){p.settling=false;place(p.el,tx,ty,d);return}
+  place(p.el,ox+r*Math.cos(sa),oy+r*Math.sin(sa),d);
+  setTimeout(()=>{p.el.style.transition='width .3s,height .3s';const T=1150,t0=performance.now();
+    const step=now=>{let u=Math.min((now-t0)/T,1);
+      // accelerate like a falling object, then a small damped bounce at the end
+      const e=u<.72?Math.pow(u/.72,2):1+Math.sin((u-.72)/.28*Math.PI*2)*.035*(1-(u-.72)/.28);
+      const a=sa+(ta-sa)*e;
+      if(p.slot!==s){p.settling=false;p.el.style.transition='';layout();return}
+      place(p.el,ox+r*Math.cos(a),oy+r*Math.sin(a),d);
+      if(u<1)requestAnimationFrame(step);else{p.settling=false;p.el.style.transition=''}};
+    requestAnimationFrame(step)},1150)}
+const hold=()=>Math.max(450,(document.getElementById('fast').checked?700:1600)/(1+queue.length*.6));
+let timer=null,running=true;
+function loop(){clearTimeout(timer);if(!running||people.length>=pool.length)return;add(false);timer=setTimeout(loop,hold()+(document.getElementById('fast').checked?600:1300))}
+document.getElementById('play').onclick=e=>{running=!running;e.target.textContent=running?'השהה':'הפעל';if(running)loop();else clearTimeout(timer)};
+document.getElementById('one').onclick=()=>add(false);
+document.getElementById('fill').onclick=()=>{while(people.length<40)add(true)};
+document.getElementById('reset').onclick=()=>{queue.length=0;busy=false;people.forEach(p=>p.el.remove());people.length=0;for(const k in byCity)delete byCity[k];drawCities();num.textContent=0;nc.textContent=0;layout();running=true;document.getElementById('play').textContent='השהה';clearTimeout(timer);timer=setTimeout(loop,800)};
+new ResizeObserver(()=>{people.forEach(p=>p.el.style.transition='none');layout();requestAnimationFrame(()=>people.forEach(p=>p.el.style.transition=''))}).observe(stage);
+document.querySelectorAll('.light .dust').forEach(dz=>{for(let i=0;i<16;i++){const m=document.createElement('i');m.style.left=(18+Math.random()*64)+'%';m.style.top=(25+Math.random()*75)+'%';m.style.setProperty('--dx',(Math.random()*4-2)+'cqw');m.style.animationDuration=(6+Math.random()*7)+'s';m.style.animationDelay=(-Math.random()*12)+'s';dz.appendChild(m)}});
+for(let k=0;k<6;k++)add(true);
+timer=setTimeout(loop,900);
+</script>
