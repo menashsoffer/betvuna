@@ -42,6 +42,13 @@ export async function updateParticipant(id: string, patch: Partial<Participant>)
   if (error) throw error;
 }
 
+/** Deletes the participant row, then their photo. The row goes first so a failure never leaves a profile without its photo. */
+export async function deleteParticipant(id: string, photoPath: string | null): Promise<void> {
+  const { error } = await sb().from('participants').delete().eq('id', id);
+  if (error) throw error;
+  if (photoPath) await sb().storage.from(PHOTO_BUCKET).remove([photoPath]);
+}
+
 export async function uploadPhoto(jpeg: Blob): Promise<string> {
   const path = `${crypto.randomUUID()}.jpg`;
   const { error } = await sb().storage.from(PHOTO_BUCKET).upload(path, jpeg, { contentType: 'image/jpeg', upsert: false });

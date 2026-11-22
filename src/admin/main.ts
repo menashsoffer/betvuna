@@ -297,6 +297,7 @@ function renderDrawer() {
           : p!.join_seq === null ? '<button class="b sm" type="button" id="join">צרף לנבחרת</button>'
           : `<button class="b sm ${p!.wall_hidden ? '' : 'red'}" type="button" id="wall">${p!.wall_hidden ? 'החזר למסך' : 'הסר מהמסך'}</button>`}
       </div>
+      ${isNew ? '' : '<button class="b sm red" type="button" id="del">מחק פרופיל</button>'}
       <div class="msg" id="dmsg"></div>
     </form>`;
 
@@ -323,6 +324,7 @@ function renderDrawer() {
   };
   $('#hidephoto')?.addEventListener('click', () =>
     busy(() => api.updateParticipant(p!.id, { photo_hidden: !p!.photo_hidden }), p!.photo_hidden ? 'התמונה הוחזרה' : 'התמונה הוסתרה'));
+  $('#del')?.addEventListener('click', () => openDelete(p!));
   $('#wall')?.addEventListener('click', () =>
     busy(() => api.updateParticipant(p!.id, { wall_hidden: !p!.wall_hidden }), p!.wall_hidden ? 'הוחזר למסך' : 'הוסר מהמסך'));
   $('#join')?.addEventListener('click', () => joinById(p!.id));
@@ -430,6 +432,35 @@ async function runSimulation(total: number) {
     btn.textContent = 'הרץ סימולציה · 40 שגרירים';
     refresh();
   }
+}
+
+function openDelete(p: Participant) {
+  const m = $('#modal');
+  m.innerHTML = `<div class="modal"><div class="box">
+    <h2>מחיקת פרופיל</h2>
+    <p class="hint" style="font-size:13px">הפרופיל של <b>${esc(p.full_name)}</b> (${esc(displayPhone(p.phone))}) יימחק לגמרי, כולל התמונה${p.join_seq !== null ? ', והוא יורד מהמסך' : ''}. אי אפשר לשחזר. אם ירצה, יוכל להירשם מחדש מהטלפון.</p>
+    <div class="row"><button class="b red" id="dgo">מחק לצמיתות</button><button class="b" id="dno">ביטול</button></div>
+    <div class="msg" id="dmsg2"></div>
+  </div></div>`;
+  const close = () => (m.innerHTML = '');
+  $('#dno').onclick = close;
+  $('.modal', m).onclick = (e) => { if (e.target === e.currentTarget) close(); };
+  const go = $<HTMLButtonElement>('#dgo');
+  go.focus();
+  go.onclick = async () => {
+    go.disabled = true;
+    try {
+      await api.deleteParticipant(p.id, p.photo_path);
+      close();
+      toast(`הפרופיל של ${p.full_name} נמחק`);
+      select(null);
+      refresh();
+    } catch (err) {
+      $('#dmsg2').className = 'msg err';
+      $('#dmsg2').textContent = api.errText(err);
+      go.disabled = false;
+    }
+  };
 }
 
 function openReset() {
