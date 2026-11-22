@@ -71,10 +71,11 @@ export async function joinOpen(): Promise<boolean> {
   return Boolean((data as { join_open: boolean }).join_open);
 }
 
-/** Calls back when the admin opens or locks the join button. */
-export function onSettings(cb: (joinOpen: boolean) => void): () => void {
+/** Live events from the wall channel: the admin opening or locking the button, and entries taken off the wall (deleted or hidden). */
+export function onWall(h: { settings?: (joinOpen: boolean) => void; removed?: () => void }): () => void {
   const ch = supabase().channel(WALL_CHANNEL)
-    .on('broadcast', { event: 'settings' }, ({ payload }) => cb(Boolean(payload?.join_open)))
+    .on('broadcast', { event: 'settings' }, ({ payload }) => h.settings?.(Boolean(payload?.join_open)))
+    .on('broadcast', { event: 'entry' }, ({ payload }) => { if (payload?.removed) h.removed?.(); })
     .subscribe();
   return () => { supabase().removeChannel(ch); };
 }
