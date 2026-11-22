@@ -4,6 +4,7 @@ import { ApiError, MESSAGES, joinOpen, joinWall, me, onSettings, recover, regist
 import { openCamera, type Camera } from './camera';
 import { findCity, loadCities, searchCities, type City } from './cities';
 import { fileToJpeg } from './image';
+import { flyFrom, mapBurst, preloadMap, type MapBurst } from './mapburst';
 import { loadPeople, savePerson } from './store';
 
 const app = document.getElementById('app')!;
@@ -13,6 +14,7 @@ const LOGOS = `<div class="logos"><img src="${BASE}brand/logo_beit_midrash_gold.
 let camera: Camera | null = null;
 let current: string | null = null; // id of the person shown on the join screen
 let isOpen = true;
+let burst: MapBurst | null = null; // the map left behind by the join animation
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join(' ');
@@ -22,6 +24,8 @@ const message = (e: unknown) => MESSAGES[e instanceof ApiError ? e.message : 'ne
 const tokenOf = (id: string) => loadPeople().find((p) => p.id === id)?.token ?? null;
 
 function show(html: string): HTMLElement {
+  burst?.remove();
+  burst = null;
   camera?.stop();
   camera = null;
   app.innerHTML = `<section class="screen">${html}</section>`;
@@ -234,11 +238,19 @@ async function joinScreen(): Promise<void> {
     const token = tokenOf(main.id);
     if (!token) return;
     btn.disabled = true;
+    navigator.vibrate?.(30);
+    el.classList.add('out');
+    const map = mapBurst(main.city);
     try {
-      const seq = await joinWall(token);
-      joined({ ...main, joined: true, join_seq: seq });
+      const [seq] = await Promise.all([joinWall(token), map.done.catch(() => {})]);
+      const from = map.origin();
+      joined({ ...main, joined: true, join_seq: seq }, map);
+      map.dim();
+      flyFrom(app.querySelector('.av.big') as HTMLElement, from);
     } catch (ex) {
+      map.remove();
       if (ex instanceof ApiError && ex.message === 'join_closed') { isOpen = false; joinScreen(); return; }
+      el.classList.remove('out');
       err.textContent = message(ex);
       btn.disabled = false;
     }
@@ -246,7 +258,7 @@ async function joinScreen(): Promise<void> {
 }
 
 /* 5. ברוך הבא לנבחרת */
-function joined(p: Me): void {
+function joined(p: Me, map: MapBurst | null = null): void {
   const el = show(`
     <div class="rays"></div>
     <div style="height:30px"></div>
@@ -256,6 +268,7 @@ function joined(p: Me): void {
     <p class="sub">הסתכל למסך הגדול:<br>התמונה שלך מופיעה עכשיו</p>
     <div class="spacer"></div>
     <button class="link" data-back>חזרה</button>`);
+  burst = map; // keep the dimmed map behind the welcome screen
   navigator.vibrate?.([80, 60, 160]);
   el.querySelector('[data-back]')!.addEventListener('click', () => joinScreen());
 }
@@ -302,4 +315,5 @@ onSettings((open) => {
   if (app.querySelector('.join, .locked')) joinScreen();
 });
 
+preloadMap();
 if (loadPeople().length) joinScreen(); else welcome();
