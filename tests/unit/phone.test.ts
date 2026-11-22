@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizePhone } from '../src/shared/phone';
+import { normalizePhone } from '../../src/shared/phone';
 
 describe('normalizePhone', () => {
   it.each([
