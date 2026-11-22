@@ -17,6 +17,16 @@ export async function sendMagicLink(email: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Redirects to Google; Supabase brings the browser back here with a session. */
+export async function signInWithGoogle(): Promise<void> {
+  const redirect = location.origin + location.pathname;
+  const { error } = await sb().auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: redirect, queryParams: { prompt: 'select_account' } },
+  });
+  if (error) throw error;
+}
+
 export async function signOut() { await sb().auth.signOut(); }
 
 export async function isAdmin(): Promise<boolean> {
