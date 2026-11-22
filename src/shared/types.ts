@@ -1,15 +1,14 @@
 export interface WallEntry {
-  seq: number;
-  pid: string;
+  join_seq: number;
   full_name: string;
   city: string;
-  photo_id: string | null;
-  joined_at: unknown;
+  photo: string | null;
+  joined_at: string;
   is_simulated: boolean;
-  hidden: boolean;
+  removed?: boolean;
 }
 
-/** What a phone keeps in localStorage: the records registered from it. */
 export interface StoredPerson {
-  pid: string;
+  id: string;
+  token: string;
 }
