@@ -6,3 +6,4 @@ export const SUPABASE_ANON_KEY: string =
   import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_eQol7Hwfv8wQ73t0YWFEog_C2U2S2kF';
 export const PHOTO_BUCKET = 'photos';
 export const WALL_CHANNEL = 'wall';
+export const SCREEN_PRESENCE_ROLE = 'screen';
