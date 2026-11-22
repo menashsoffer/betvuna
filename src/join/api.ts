@@ -32,7 +32,9 @@ export async function register(input: {
   name: string; phone: string; email: string; city: string; photoPath?: string | null; registeredByToken?: string | null;
 }): Promise<{ id: string; token: string }> {
   const { data, error } = await supabase().rpc('register', {
-    p_name: input.name, p_phone: input.phone, p_email: input.email, p_city: input.city, p_consent: true,
+    p_name: input.name, p_phone: input.phone, p_email: input.email, p_city: input.city,
+    // Consent is asked verbally at the event (decided 22.11); the server still records the time.
+    p_consent: true,
     p_photo_path: input.photoPath ?? null, p_registered_by_token: input.registeredByToken ?? null,
   });
   if (error || !data) fail(error);
