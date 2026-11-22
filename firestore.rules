@@ -1,0 +1,145 @@
+rules_version = '2';
+// נבחרת השגרירים: חוקי אבטחה ל-Firestore (תוכנית Spark החינמית, בלי שרת ובלי Storage)
+//
+// people/{pid}     פרטים אישיים. pid = sha256("betvuna|" + phone + "|" + email). רק הבעלים והאדמין קוראים.
+// phones/{hash}    hash = sha256(phone). מבטיח טלפון ייחודי. אף אחד לא קורא.
+// photos/{id}      התמונה (JPEG ב-base64). מזהה אקראי, קריאה לפי מזהה בלבד.
+// wall/{seq}       מה שהמסך רואה: שם, יישוב, מזהה תמונה. קריאה ציבורית.
+// meta/counter     { next }: המספר הסידורי הבא על הקיר.
+// meta/settings    { join_open, wall_epoch }.
+// admins/{email}   רשימת המורשים, מנוהלת מהקונסולה.
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email_verified == true
+        && exists(/databases/$(db)/documents/admins/$(request.auth.token.email.lower()));
+    }
+    function str(v, lo, hi) { return v is string && v.size() >= lo && v.size() <= hi; }
+    function sha(s) { return hashing.sha256(s).toHexString().lower(); }
+    function changedOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function owns(p) { return signedIn() && request.auth.uid in p.owners; }
+    function counter() { return get(/databases/$(db)/documents/meta/counter).data.next; }
+    function counterAfter() { return getAfter(/databases/$(db)/documents/meta/counter).data.next; }
+
+    match /admins/{email} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /meta/settings {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /meta/counter {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      // הגדלה באחד, רק יחד עם יצירת שורת הקיר של המספר הנוכחי
+      allow update: if isAdmin() || (
+        signedIn()
+        && request.resource.data.keys().hasOnly(['next'])
+        && request.resource.data.next == resource.data.next + 1
+        && existsAfter(/databases/$(db)/documents/wall/$(string(resource.data.next)))
+      );
+    }
+
+    match /phones/{hash} {
+      allow get, list: if isAdmin();
+      allow delete: if isAdmin();
+      allow update: if false;
+      // נוצר רק יחד עם רשומת people תואמת. אם כבר קיים, זה "update" ונחסם: טלפון ייחודי.
+      allow create: if isAdmin() || (
+        signedIn()
+        && request.resource.data.keys().hasOnly(['pid'])
+        && getAfter(/databases/$(db)/documents/people/$(request.resource.data.pid)).data.phone_hash == hash
+      );
+    }
+
+    match /people/{pid} {
+      allow get: if isAdmin() || (resource != null && owns(resource.data));
+      allow list, delete: if isAdmin();
+
+      allow create: if isAdmin() || (
+        signedIn()
+        && request.resource.data.keys().hasOnly(['full_name','phone','phone_hash','email','city','photo_id','consent_at','owners','registered_by','created_at','join_seq'])
+        && request.resource.data.phone.matches('^[+]9725[0-9]{8}$')
+        && request.resource.data.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.email.size() <= 120
+        && request.resource.data.email == request.resource.data.email.lower()
+        && pid == sha('betvuna|' + request.resource.data.phone + '|' + request.resource.data.email)
+        && request.resource.data.phone_hash == sha(request.resource.data.phone)
+        && existsAfter(/databases/$(db)/documents/phones/$(request.resource.data.phone_hash))
+        && request.resource.data.owners == [request.auth.uid]
+        && str(request.resource.data.full_name, 2, 60)
+        && str(request.resource.data.city, 2, 40)
+        && request.resource.data.consent_at == request.time
+        && request.resource.data.created_at == request.time
+        && request.resource.data.join_seq == null
+        && (request.resource.data.photo_id == null || str(request.resource.data.photo_id, 36, 36))
+        && (request.resource.data.registered_by == null || str(request.resource.data.registered_by, 64, 64))
+      );
+
+      allow update: if isAdmin()
+        // הבעלים מעדכן שם, יישוב או תמונה (טלפון ומייל קובעים את המזהה, ולכן רק אדמין משנה)
+        || (owns(resource.data)
+            && changedOnly(['full_name','city','photo_id'])
+            && str(request.resource.data.full_name, 2, 60)
+            && str(request.resource.data.city, 2, 40)
+            && (request.resource.data.photo_id == null || str(request.resource.data.photo_id, 36, 36)))
+        // הצטרפות לקיר: באותה טרנזקציה עם המונה ושורת הקיר
+        || (owns(resource.data)
+            && resource.data.join_seq == null
+            && changedOnly(['join_seq'])
+            && get(/databases/$(db)/documents/meta/settings).data.join_open == true
+            && request.resource.data.join_seq == counter()
+            && counterAfter() == counter() + 1
+            && existsAfter(/databases/$(db)/documents/wall/$(string(counter()))))
+        // "כבר נרשמתי" מטלפון אחר: מי שיודע טלפון ומייל (ולכן את pid) מוסיף את עצמו
+        || (signedIn()
+            && changedOnly(['owners'])
+            && request.resource.data.owners.hasAll(resource.data.owners)
+            && request.resource.data.owners.size() == resource.data.owners.size() + 1
+            && request.auth.uid in request.resource.data.owners
+            && resource.data.owners.size() < 5);
+    }
+
+    match /photos/{id} {
+      allow get: if true;
+      allow list, update, delete: if isAdmin();
+      allow create: if isAdmin() || (
+        signedIn()
+        && id.size() == 36
+        && request.resource.data.keys().hasOnly(['data','uid','created_at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.created_at == request.time
+        && request.resource.data.data is string
+        && request.resource.data.data.size() <= 420000
+        && request.resource.data.data.matches('^data:image/jpeg;base64,.*')
+      );
+    }
+
+    match /wall/{seq} {
+      allow read: if true;
+      allow update, delete: if isAdmin();
+      allow create: if isAdmin() || (
+        signedIn()
+        && request.resource.data.keys().hasOnly(['seq','pid','full_name','city','photo_id','joined_at','is_simulated','hidden'])
+        && request.resource.data.seq == int(seq)
+        && int(seq) == counter()
+        && counterAfter() == counter() + 1
+        && request.resource.data.is_simulated == false
+        && request.resource.data.hidden == false
+        && request.resource.data.joined_at == request.time
+        && owns(get(/databases/$(db)/documents/people/$(request.resource.data.pid)).data)
+        && getAfter(/databases/$(db)/documents/people/$(request.resource.data.pid)).data.join_seq == int(seq)
+        && request.resource.data.full_name == get(/databases/$(db)/documents/people/$(request.resource.data.pid)).data.full_name
+        && request.resource.data.city == get(/databases/$(db)/documents/people/$(request.resource.data.pid)).data.city
+        && request.resource.data.photo_id == get(/databases/$(db)/documents/people/$(request.resource.data.pid)).data.photo_id
+      );
+    }
+  }
+}

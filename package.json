@@ -7,15 +7,20 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run tests/unit",
+    "test:rules": "vitest run tests/rules",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.110.0"
+    "firebase": "12.19.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
     "typescript": "5.7.3",
     "vite": "6.4.5",
     "vitest": "4.1.12"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.13.7"
   }
 }
