@@ -9,9 +9,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); c
   font-family: "Heebo", system-ui, sans-serif; direction: rtl; }
 body.idle, body.idle * { cursor: none !important; }
 
-/* 16:9 stage, letterboxed if the window is not 16:9 */
+/* Stage between 16:9 and 2:1: fills a 16:9 screen or a 2:1 projector (e.g. 1024x512) edge to edge,
+   letterboxed only if the window is narrower than 16:9 or wider than 2:1. */
 .stage { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(100vw, 177.78vh); aspect-ratio: 16 / 9; overflow: hidden; container-type: inline-size;
+  width: min(100vw, 200vh); height: min(100vh, 56.25vw); overflow: hidden; container-type: inline-size;
   background: radial-gradient(60% 75% at 50% 52%, #13204a 0%, #0a1130 45%, #050815 100%); }
 .stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 7;
   box-shadow: inset 0 0 12cqw rgba(0, 0, 0, .65); }

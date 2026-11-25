@@ -9,6 +9,7 @@ describe.each([
   [1920, 1080],
   [3840, 2160],
   [1280, 720],
+  [1024, 512], // the hall projector: 2:1, low resolution
 ])('layoutRings at %dx%d', (W, H) => {
   it.each([0, 1, 5, 12, 30, 45, 60, 80, 100, 120, 150])('places %d ambassadors', (n) => {
     const L = layoutRings({ n, W, H, ...base });
@@ -39,7 +40,12 @@ describe.each([
   });
 
   it('circles stay readable', () => {
-    expect(layoutRings({ n: 30, W, H, ...base }).showNames).toBe(true);
+    // big screens keep names under 30 circles; any name shown is at least ~11px
+    if (H >= 1080) expect(layoutRings({ n: 30, W, H, ...base }).showNames).toBe(true);
+    for (const n of [5, 30, 80]) {
+      const L = layoutRings({ n, W, H, ...base });
+      if (L.showNames) expect(L.d * 0.16).toBeGreaterThanOrEqual(10.8);
+    }
     expect(layoutRings({ n: 150, W, H, ...base }).d).toBeGreaterThan(H * 0.035);
   });
 });
