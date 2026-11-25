@@ -49,6 +49,8 @@ export function blockedBoxes(W: number, H: number): Box[] {
 }
 
 const MAX_RINGS = 16;
+/** Smallest circle that still gets a name under it: its name is d * 0.16 ≈ 11px. */
+const NAME_MIN_PX = 68;
 
 /** Map height as a share of the screen: 60% when empty, shrinking as the rings grow. */
 export function mapShare(n: number): number {
@@ -68,7 +70,9 @@ export function layoutRings({ n, W, H, geoW, geoH, dots }: LayoutInput): Layout 
   const land = dots.map(([x, y]) => [mx + x * scale, my + y * scale] as const);
   const boxes = blockedBoxes(W, H);
   const pad = H * 0.012;
-  const nameMin = H * 0.065;
+  // names only when they come out legible: on a low-res screen (e.g. 1024x512) tiny names are mush,
+  // so they are dropped and the photos get the room instead (the spotlight still shows each name big)
+  const nameMin = Math.max(H * 0.065, NAME_MIN_PX);
 
   const ringsFor = (d: number) => {
     const label = d > nameMin ? d * 0.4 : 0;
